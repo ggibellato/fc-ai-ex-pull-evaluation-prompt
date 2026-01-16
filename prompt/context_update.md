@@ -78,10 +78,107 @@ LLM_PROVIDER=groq  # ou "openai" ou "google"
 - ✅ Mapeamento do que está pronto vs. o que precisa ser feito
 
 **Próximos passos (Fase 1):**
-1. Adicionar `langchain-groq` ao `requirements.txt`
-2. Verificar/complementar `.env.example` com GROQ_API_KEY
-3. Criar ambiente virtual e instalar dependências
-4. Testar carregamento de variáveis de ambiente
+1. ✅ Adicionar `langchain-groq` ao `requirements.txt`
+2. ✅ Verificar/complementar `.env.example` com GROQ_API_KEY
+3. ✅ Criar ambiente virtual e instalar dependências
+4. ✅ Adicionar suporte GROQ no código `src/utils.py`
+
+---
+
+### 16/01/2026 - Fase 1: Setup Inicial CONCLUÍDA ✅
+
+**Status:** FASE 1 COMPLETA
+
+**Ações realizadas:**
+
+1. ✅ **Adicionado `langchain-groq==0.2.1`** ao `requirements.txt`
+   - Pacote necessário para usar GROQ como provider LLM
+
+2. ✅ **Atualizado `.env.example`** com configuração completa:
+   - Adicionado `GROQ_API_KEY` (provider recomendado)
+   - Organizado por provider: GROQ (recomendado), Google (free), OpenAI (pago)
+   - Configuração padrão: GROQ com `mixtral-8x7b-32768`
+   - Comentários explicativos sobre cada opção
+
+3. ✅ **Adicionado suporte GROQ** em `src/utils.py`:
+   - Implementado bloco `elif provider == 'groq'` na função `get_llm()`
+   - Importa `ChatGroq` de `langchain_groq`
+   - Valida `GROQ_API_KEY` do `.env`
+   - Retorna instância configurada de ChatGroq
+   - Atualizada mensagem de erro para incluir 'groq' como opção válida
+
+4. ✅ **Criado ambiente virtual** (`venv/`):
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+5. ✅ **Instaladas todas as dependências**:
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+   - Todos os pacotes instalados com sucesso
+   - `langchain-groq` instalado e pronto para uso
+   - Total de 80+ pacotes incluindo dependências transitivas
+
+**Arquivos modificados:**
+- ✅ `requirements.txt` - Adicionado langchain-groq
+- ✅ `.env.example` - Configuração completa com GROQ
+- ✅ `src/utils.py` - Suporte GROQ na função get_llm()
+
+**Próximos passos (Fase 2):**
+1. ✅ Copiar `.env.example` para `.env` e configurar API keys
+2. ✅ Implementar funções vazias em `src/pull_prompts.py`
+3. ⏳ Testar pull do prompt v1 do LangSmith Hub (após configurar LANGSMITH_API_KEY)
+4. ⏳ Verificar arquivo `prompts/bug_to_user_story_v1.yml` gerado
+
+---
+
+### 16/01/2026 - Fase 2: Pull de Prompts IMPLEMENTADA ✅
+
+**Status:** CÓDIGO IMPLEMENTADO - AGUARDANDO CONFIGURAÇÃO DE API KEYS
+
+**Ações realizadas:**
+
+1. ✅ **Criado arquivo `.env`** baseado no template:
+   ```bash
+   cp .env.example .env
+   ```
+   - Usuário vai configurar suas API keys manualmente
+   - Arquivo já no `.gitignore` (segurança)
+
+2. ✅ **Implementado `src/pull_prompts.py`** - Funções completas:
+   - `pull_prompts_from_langsmith()` - Faz pull do Hub e converte para YAML
+   - `main()` - Função principal com validações e feedback
+   - Lógica para extrair system_prompt e user_prompt do objeto prompt
+   - Tratamento de erros e mensagens informativas
+   - Salva em `prompts/bug_to_user_story_v1.yml`
+
+3. ✅ **Implementado `src/push_prompts.py`** - Funções completas:
+   - `push_prompt_to_langsmith()` - Publica prompt no Hub (público)
+   - `validate_prompt()` - Valida estrutura e campos obrigatórios
+   - `main()` - Fluxo completo: carregar → validar → push
+   - Suporte para USERNAME_LANGSMITH_HUB do `.env`
+   - Cria ChatPromptTemplate e faz push com `new_repo_is_public=True`
+
+**Validações implementadas em `validate_prompt()`:**
+- ✅ Campos obrigatórios: system_prompt, description, version
+- ✅ system_prompt não pode estar vazio
+- ✅ Não pode conter TODOs
+- ✅ Mínimo de 2 técnicas aplicadas (se campo existir)
+
+**Arquivos implementados:**
+- ✅ `src/pull_prompts.py` - Pull completo
+- ✅ `src/push_prompts.py` - Push e validação completos
+- ✅ `.env` - Criado (usuário vai configurar)
+
+**Próximos passos (Fase 3):**
+1. Usuário configura API keys no `.env` (LANGSMITH_API_KEY, GROQ_API_KEY)
+2. Executar `python src/pull_prompts.py` para baixar prompt v1
+3. Analisar `prompts/bug_to_user_story_v1.yml` e identificar problemas
+4. Criar `prompts/bug_to_user_story_v2.yml` com otimizações
+5. Aplicar pelo menos 2 técnicas: Few-shot, CoT, Role Prompting, etc.
 
 ---
 

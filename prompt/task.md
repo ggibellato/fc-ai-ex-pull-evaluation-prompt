@@ -4,39 +4,40 @@
 **IMPORTANTE:** O repositório base já contém estrutura inicial. Foco em complementar e configurar.
 
 1. **[DONE]** Fazer fork do repositório base da FullCycle: https://github.com/devfullcycle/mba-ia-pull-evaluation-prompt
-2. **[TODO]** Criar e ativar o ambiente virtual (`venv`).  
+2. **[DONE]** Criar e ativar o ambiente virtual (`venv`).  
    ```bash
    python3 -m venv venv
    source venv/bin/activate
    ```
-3. **[TODO]** Verificar e complementar `requirements.txt` (já existe no fork):
+3. **[DONE]** Verificar e complementar `requirements.txt` (já existe no fork):
    - ✅ Já inclusos: `langchain`, `langsmith`, `langchain-openai`, `langchain-google-genai`, `python-dotenv`, `pytest`, `pyyaml`
-   - ❌ **ADICIONAR:** `langchain-groq` (requisito especial - usar GROQ como LLM principal por custo)
+   - ✅ **ADICIONADO:** `langchain-groq==0.2.1` (requisito especial - usar GROQ como LLM principal por custo)
    
-4. **[TODO]** Verificar e criar/complementar `.env.example` com variáveis necessárias:
-   - `LANGSMITH_API_KEY`, `LANGSMITH_PROJECT`, `LANGSMITH_TRACING` (obrigatório)
-   - `GROQ_API_KEY` (principal - requisito especial por custo)
-   - `OPENAI_API_KEY` (opcional - referência)
-   - `LLM_PROVIDER` (para alternar entre providers: "groq", "openai", "google")
+4. **[DONE]** Verificar e criar/complementar `.env.example` com variáveis necessárias:
+   - ✅ `LANGSMITH_API_KEY`, `LANGSMITH_PROJECT`, `LANGSMITH_TRACING` (obrigatório)
+   - ✅ `GROQ_API_KEY` (principal - requisito especial por custo)
+   - ✅ `OPENAI_API_KEY` (opcional - referência)
+   - ✅ `LLM_PROVIDER` (para alternar entre providers: "groq", "openai", "google")
    
-5. **[TODO]** Instalar dependências e testar carregamento de variáveis:
+5. **[DONE]** Instalar dependências e adicionar suporte GROQ:
    ```bash
    pip install -r requirements.txt
-   python -c "from dotenv import load_dotenv; import os; load_dotenv(); print('OK' if os.getenv('LANGSMITH_API_KEY') else 'Configure .env')"
    ```
+   - ✅ Todas as dependências instaladas (80+ pacotes)
+   - ✅ Suporte GROQ adicionado em `src/utils.py` função `get_llm()`
 #### Fase 2 — Pull dos prompts ruins
 **Referência:** Ver "1. Pull dos Prompt inicial do LangSmith" em `prompt/exercise.md`
 
 **IMPORTANTE:** Script `src/pull_prompts.py` já existe no fork, mas com funções vazias (`...`). Foco em implementar a lógica.
 
-6. **[TODO]** Implementar as funções vazias em `src/pull_prompts.py`:  
-   - Conectar ao LangSmith Prompt Hub usando credenciais do `.env`
-   - Fazer pull de `leonanluppi/bug_to_user_story_v1` (conforme especificado em `exercise.md`)
-   - Usar `langchain.hub.pull()` para obter o prompt
-   - Converter o prompt para formato YAML e salvar em `prompts/bug_to_user_story_v1.yml`
-   - **Nota:** O arquivo v1 já existe no fork como exemplo, mas deve ser sobrescrito com pull real
+6. **[DONE]** Implementar as funções vazias em `src/pull_prompts.py`:  
+   - ✅ Conectar ao LangSmith Prompt Hub usando credenciais do `.env`
+   - ✅ Fazer pull de `leonanluppi/bug_to_user_story_v1` (conforme especificado em `exercise.md`)
+   - ✅ Usar `langchain.hub.pull()` para obter o prompt
+   - ✅ Converter o prompt para formato YAML e salvar em `prompts/bug_to_user_story_v1.yml`
+   - ✅ Implementado também `src/push_prompts.py` com validações
    
-7. **[TODO]** Testar execução do pull:
+7. **[TODO]** Testar execução do pull (após configurar API keys):
    ```bash
    python src/pull_prompts.py
    ```

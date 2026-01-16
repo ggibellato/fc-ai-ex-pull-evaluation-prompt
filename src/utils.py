@@ -222,10 +222,26 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.0):
             google_api_key=api_key
         )
 
+    elif provider == 'groq':
+        from langchain_groq import ChatGroq
+
+        api_key = os.getenv('GROQ_API_KEY')
+        if not api_key:
+            raise ValueError(
+                "GROQ_API_KEY não configurada no .env\n"
+                "Obtenha uma chave em: https://console.groq.com/keys"
+            )
+
+        return ChatGroq(
+            model=model_name,
+            temperature=temperature,
+            groq_api_key=api_key
+        )
+
     else:
         raise ValueError(
             f"Provider '{provider}' não suportado.\n"
-            f"Use 'openai' ou 'google' na variável LLM_PROVIDER do .env"
+            f"Use 'openai', 'google' ou 'groq' na variável LLM_PROVIDER do .env"
         )
 
 
