@@ -220,3 +220,148 @@ LLM_PROVIDER=groq  # ou "openai" ou "google"
 - Ajuste do `task.md` para incluir referências explícitas ao `exercise.md`
 
 ---
+
+### 18/01/2026 - Fase 2: Pull dos Prompts CONCLUÍDA ✅
+
+**Status:** PULL EXECUTADO COM SUCESSO
+
+**Ações realizadas:**
+
+1. ✅ **Configuração do LangSmith validada**
+   - LANGSMITH_API_KEY configurado e funcional
+   - LANGSMITH_PROJECT criado: `fc-ai-ex-pull-evaluation-prompt`
+   - Credenciais validadas com sucesso
+
+2. ✅ **Pull do prompt v1 executado**
+   ```bash
+   python src/pull_prompts.py
+   ```
+   - Prompt `leonanluppi/bug_to_user_story_v1` baixado com sucesso
+   - Salvo em `prompts/bug_to_user_story_v1.yml`
+   - Formato YAML válido
+
+**Conteúdo do prompt v1 baixado:**
+```yaml
+system_prompt: "Você é um assistente que ajuda a transformar relatos de bugs..."
+user_prompt: "{bug_report}"
+```
+
+**Próxima fase:** Fase 3 - Análise e Otimização
+
+---
+
+### 18/01/2026 - Fase 3: Análise do Prompt v1
+
+**Status:** ANÁLISE COMPLETA
+
+**Problemas identificados no prompt v1:**
+
+1. **❌ Role Definition genérica e vaga**
+   - Apenas "assistente que ajuda" - muito genérico
+   - Sem persona específica (Product Manager, Analista de Negócio)
+   - Sem contexto de expertise ou experiência
+   - Sem definir responsabilidades claras
+
+2. **❌ Instruções imprecisas**
+   - "crie uma user story" - sem especificar formato
+   - Não menciona estrutura "Como... Eu quero... Para que..."
+   - Sem exigir critérios de aceitação
+   - Sem orientações sobre formato Markdown
+   - Sem definir nível de detalhe esperado
+
+3. **❌ Zero exemplos (Few-shot Learning ausente)**
+   - Nenhum exemplo de entrada/saída
+   - Modelo não tem referência de qualidade esperada
+   - Sem exemplos de diferentes complexidades
+   - Dificulta calibração do modelo
+
+4. **❌ Falta de estruturação (Skeleton/CoT)**
+   - Sem guiar o raciocínio passo a passo
+   - Sem instruções de etapas claras (análise → estruturação → geração)
+   - Sem orientações sobre análise de impacto
+   - Sem mencionar priorização
+
+5. **❌ Tratamento de edge cases inexistente**
+   - Sem orientações para bugs complexos
+   - Sem instruções para bugs vagos ou incompletos
+   - Sem lidar com informações faltantes
+   - Sem estratégia para ambiguidades
+
+6. **❌ Tom e formato não especificados**
+   - Sem definir tom profissional/empático
+   - Sem exigir Markdown
+   - Sem padrões de formatação
+   - Sem definir audience (desenvolvedores vs. stakeholders)
+
+**Métricas esperadas para o prompt v1:**
+- Tone Score: ~0.4-0.5 (tom muito genérico)
+- Acceptance Criteria Score: ~0.3-0.4 (não menciona critérios)
+- User Story Format Score: ~0.3-0.5 (não especifica formato padrão)
+- Completeness Score: ~0.4-0.5 (faltam detalhes técnicos)
+
+**Objetivo da otimização:**
+- ✅ Tone Score >= 0.9
+- ✅ Acceptance Criteria Score >= 0.9
+- ✅ User Story Format Score >= 0.9
+- ✅ Completeness Score >= 0.9
+
+**Próximo passo:** Criar prompt v2 com técnicas avançadas
+
+---
+
+### 18/01/2026 - Fase 3: Otimização do Prompt CONCLUÍDA ✅
+
+**Status:** PROMPT V2 CRIADO E VALIDADO
+
+**Ações realizadas:**
+
+1. ✅ **Criação do prompt v2 otimizado**
+   - Arquivo: `prompts/bug_to_user_story_v2.yml`
+   - Tamanho: ~14KB (vs. ~500B do v1)
+   - Estrutura completa e profissional
+
+2. ✅ **Técnicas aplicadas (5 técnicas - acima do mínimo de 2):**
+   - **Role Prompting:** Product Manager experiente com 10+ anos, domínio em metodologias ágeis
+   - **Few-shot Learning:** 3 exemplos completos (simples, médio, complexo)
+   - **Chain of Thought:** Processo explícito em 3 etapas (Análise → Identificação → Estruturação)
+   - **Skeleton of Thought:** 4 seções estruturadas (User Story, Contexto Técnico, Critérios, Impacto)
+   - **Tratamento de edge cases:** Instruções para bugs vagos, críticos e multi-sistema
+
+3. ✅ **Melhorias implementadas:**
+   - ✅ Definição clara de persona e expertise
+   - ✅ Formato Markdown padronizado com seções
+   - ✅ Critérios de aceitação específicos e testáveis
+   - ✅ Análise de impacto e prioridade estruturada
+   - ✅ Tom empático e orientado a valor
+   - ✅ Instruções de boas práticas e antipadrões
+   - ✅ Exemplos cobrindo 3 níveis de complexidade
+
+4. ✅ **Implementação dos 6 testes obrigatórios**
+   - Arquivo: `tests/test_prompts.py`
+   - Testes implementados:
+     1. `test_prompt_has_system_prompt` ✅
+     2. `test_prompt_has_role_definition` ✅
+     3. `test_prompt_mentions_format` ✅
+     4. `test_prompt_has_few_shot_examples` ✅
+     5. `test_prompt_no_todos` ✅
+     6. `test_minimum_techniques` ✅
+   - Testes adicionais: metadata, versão, tags, descrição
+   - **Resultado:** 9/9 testes PASSOU ✅
+
+**Comparação v1 vs v2:**
+
+| Aspecto | v1 (Original) | v2 (Otimizado) |
+|---------|---------------|----------------|
+| Tamanho | ~500 bytes | ~14KB |
+| Role Definition | Genérica | Product Manager experiente (detalhado) |
+| Instruções | Vagas | Processo passo a passo explícito |
+| Exemplos | 0 | 3 (simples, médio, complexo) |
+| Formato | Não especificado | Markdown padronizado com seções |
+| Critérios de aceitação | Não mencionado | Instruções detalhadas |
+| Edge cases | Ausente | 3 cenários cobertos |
+| Técnicas aplicadas | 0 | 5 técnicas documentadas |
+| Testes | 0 | 9 testes passando |
+
+**Próxima fase:** Fase 4 - Push do prompt otimizado para o LangSmith Hub
+
+---

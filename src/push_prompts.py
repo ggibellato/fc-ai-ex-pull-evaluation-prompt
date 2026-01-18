@@ -12,6 +12,7 @@ SIMPLIFICADO: Código mais limpo e direto ao ponto.
 
 import os
 import sys
+from pathlib import Path
 from dotenv import load_dotenv
 from langchain import hub
 from langchain_core.prompts import ChatPromptTemplate

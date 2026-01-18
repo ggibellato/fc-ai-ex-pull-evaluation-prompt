@@ -48,43 +48,48 @@
 #### Fase 3 — Análise e otimização de prompt
 **Referência:** Ver "2. Otimização do Prompt" em `prompt/exercise.md`
 
-8. **[TODO]** Analisar `bug_to_user_story_v1.yml` e identificar falhas:
-   - Falta de persona/role definition
-   - Imprecisão nas instruções
-   - Ausência de exemplos (few-shot)
-   - Falta de estruturação (skeleton/CoT)
-9. **[TODO]** Documentar diagnóstico detalhado em `prompt/context_update.md`.  
-10. **[TODO]** Criar `prompts/bug_to_user_story_v2.yml` aplicando **no mínimo 2 técnicas** (conforme `exercise.md`):
-    - **Few-shot Learning:** Incluir 2-3 exemplos claros de entrada/saída
-    - **Chain of Thought (CoT):** Instruir modelo a raciocinar passo a passo
-    - **Role Prompting:** Definir persona detalhada (ex: "Você é um Product Manager experiente...")
-    - **Skeleton of Thought:** Estruturar resposta em etapas claras
-    - Outras técnicas mencionadas no curso
-11. **[TODO]** Criar testes completos em `tests/test_prompts.py` validando **todos os requisitos de `exercise.md`**:
-    - `test_prompt_has_system_prompt` - Campo existe e não está vazio
-    - `test_prompt_has_role_definition` - Persona definida (ex: "Você é...")
-    - `test_prompt_mentions_format` - Exige formato Markdown/User Story
-    - `test_prompt_has_few_shot_examples` - Contém exemplos entrada/saída
-    - `test_prompt_no_todos` - Nenhum [TODO] esquecido no texto
-    - `test_minimum_techniques` - Pelo menos 2 técnicas listadas nos metadados YAML
+8. **[DONE]** Analisar `bug_to_user_story_v1.yml` e identificar falhas:
+   - ✅ Falta de persona/role definition
+   - ✅ Imprecisão nas instruções
+   - ✅ Ausência de exemplos (few-shot)
+   - ✅ Falta de estruturação (skeleton/CoT)
+   - ✅ Análise completa documentada em `prompt/context_update.md`
+   
+9. **[DONE]** Documentar diagnóstico detalhado em `prompt/context_update.md`.  
+   - ✅ 6 problemas principais identificados
+   - ✅ Métricas esperadas documentadas
+   - ✅ Comparação v1 vs v2 criada
+   
+10. **[DONE]** Criar `prompts/bug_to_user_story_v2.yml` aplicando **5 técnicas** (acima do mínimo de 2):
+    - ✅ **Role Prompting:** Product Manager experiente com 10+ anos
+    - ✅ **Few-shot Learning:** 3 exemplos completos (simples, médio, complexo)
+    - ✅ **Chain of Thought (CoT):** Processo explícito em 3 etapas
+    - ✅ **Skeleton of Thought:** 4 seções estruturadas
+    - ✅ **Tratamento de edge cases:** 3 cenários especiais cobertos
+    
+11. **[DONE]** Criar testes completos em `tests/test_prompts.py` validando **todos os requisitos de `exercise.md`**:
+    - ✅ `test_prompt_has_system_prompt` - Campo existe e não está vazio
+    - ✅ `test_prompt_has_role_definition` - Persona definida (ex: "Você é...")
+    - ✅ `test_prompt_mentions_format` - Exige formato Markdown/User Story
+    - ✅ `test_prompt_has_few_shot_examples` - Contém exemplos entrada/saída
+    - ✅ `test_prompt_no_todos` - Nenhum [TODO] esquecido no texto
+    - ✅ `test_minimum_techniques` - Pelo menos 2 técnicas listadas nos metadados YAML
+    - ✅ **Resultado:** 9/9 testes passando
+    
 #### Fase 4 — Push e versionamento
 **Referência:** Ver "3. Push e Avaliação" em `prompt/exercise.md`
 
-**IMPORTANTE:** Script `src/push_prompts.py` já existe no fork, mas com funções vazias (`...`). Foco em implementar a lógica.
+**IMPORTANTE:** Script `src/push_prompts.py` já está implementado no fork com lógica funcional.
 
-12. **[TODO]** Implementar as funções vazias em `src/push_prompts.py`:  
-   - Ler o arquivo otimizado `prompts/bug_to_user_story_v2.yml`
-   - Validar estrutura básica do prompt (campos obrigatórios)
-   - Usar `langchain.hub.push()` para enviar ao LangSmith
-   - Nome versionado: `{seu_username}/bug_to_user_story_v2`
-   - Adicionar metadados obrigatórios no próprio YAML:
-     * Tags descritivas (ex: ["bug-to-user-story", "optimized", "few-shot", "cot"])
-     * Descrição do prompt
-     * Técnicas utilizadas listadas (conforme aplicado na Fase 3)
-     * Versão (v2)
-   - Tornar o prompt público (parâmetro `is_public=True` no push)
+12. **[TODO]** Configurar USERNAME_LANGSMITH_HUB no `.env`:
+   - Acessar https://smith.langchain.com/hub
+   - Identificar seu username (geralmente parte antes do @ do email Google)
+   - Adicionar ao `.env`: `USERNAME_LANGSMITH_HUB=seu_username`
    
 13. **[TODO]** Testar execução do push:
+   ```bash
+   python src/push_prompts.py
+   ```
    ```bash
    python src/push_prompts.py
    ```
