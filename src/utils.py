@@ -238,10 +238,26 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.0):
             groq_api_key=api_key
         )
 
+    elif provider == 'anthropic':
+        from langchain_anthropic import ChatAnthropic
+
+        api_key = os.getenv('ANTHROPIC_API_KEY')
+        if not api_key:
+            raise ValueError(
+                "ANTHROPIC_API_KEY não configurada no .env\n"
+                "Obtenha uma chave em: https://console.anthropic.com/keys"
+            )
+
+        return ChatAnthropic(
+            model=model_name,
+            temperature=temperature,
+            anthropic_api_key=api_key
+        )
+
     else:
         raise ValueError(
             f"Provider '{provider}' não suportado.\n"
-            f"Use 'openai', 'google' ou 'groq' na variável LLM_PROVIDER do .env"
+            f"Use 'openai', 'google', 'groq' ou 'anthropic' na variável LLM_PROVIDER do .env"
         )
 
 

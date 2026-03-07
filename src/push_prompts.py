@@ -46,6 +46,8 @@ def push_prompt_to_langsmith(prompt_name: str, prompt_data: dict) -> bool:
         # Extrair campos do prompt_data
         system_prompt = prompt_data.get('system_prompt', '')
         user_prompt = prompt_data.get('user_prompt', '{bug_report}')
+        description = prompt_data.get('description', '')
+        tags = prompt_data.get('tags') or None
         
         # Criar ChatPromptTemplate
         from langchain_core.prompts import ChatPromptTemplate
@@ -59,7 +61,9 @@ def push_prompt_to_langsmith(prompt_name: str, prompt_data: dict) -> bool:
         hub.push(
             full_prompt_name,
             prompt_template,
-            new_repo_is_public=True
+            new_repo_is_public=True,
+            new_repo_description=description,
+            tags=tags
         )
         
         print(f"   ✓ Prompt publicado com sucesso!")

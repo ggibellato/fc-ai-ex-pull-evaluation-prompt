@@ -37,7 +37,7 @@
    - ✅ Converter o prompt para formato YAML e salvar em `prompts/bug_to_user_story_v1.yml`
    - ✅ Implementado também `src/push_prompts.py` com validações
    
-7. **[TODO]** Testar execução do pull (após configurar API keys):
+7. **[DONE]** Testar execução do pull (após configurar API keys):
    ```bash
    python src/pull_prompts.py
    ```
@@ -81,12 +81,12 @@
 
 **IMPORTANTE:** Script `src/push_prompts.py` já está implementado no fork com lógica funcional.
 
-12. **[TODO]** Configurar USERNAME_LANGSMITH_HUB no `.env`:
+12. **[DONE]** Configurar USERNAME_LANGSMITH_HUB no `.env`:
    - Acessar https://smith.langchain.com/hub
    - Identificar seu username (geralmente parte antes do @ do email Google)
    - Adicionar ao `.env`: `USERNAME_LANGSMITH_HUB=seu_username`
    
-13. **[TODO]** Testar execução do push:
+13. **[DONE]** Testar execução do push:
    ```bash
    python src/push_prompts.py
    ```

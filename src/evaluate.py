@@ -286,6 +286,8 @@ def main():
         required_vars.append("OPENAI_API_KEY")
     elif provider in ["google", "gemini"]:
         required_vars.append("GOOGLE_API_KEY")
+    elif provider == "Anthropic":
+        required_vars.append("ANTHROPIC_API_KEY")
 
     if not check_env_vars(required_vars):
         return 1
