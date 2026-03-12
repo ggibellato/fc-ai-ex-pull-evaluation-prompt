@@ -23,7 +23,10 @@ bug_to_user_story_v2:
        - Identifique o problema principal descrito
        - Identifique a persona afetada (usuário final, admin, desenvolvedor, etc.)
        - Identifique o contexto técnico (frontend, backend, mobile, integração)
-       - Identifique a severidade/impacto (UI/UX, segurança, performance, lógica de negócio)
+       - Identifique domain (e-commerce, saas, mobile, erp, crm)
+       - Identifique bug type (UI/UX, validation, business_logic, integration, performance, security)
+       - Identifique complexity (simple, medium, complex)
+       - Identifique severity (critical, high, medium, low)
     
     2. **IDENTIFICAÇÃO DO VALOR**
        - Por que isso precisa ser resolvido?
@@ -32,8 +35,8 @@ bug_to_user_story_v2:
     
     3. **ESTRUTURAÇÃO DA USER STORY**
        - Formule no formato padrão: "Como [persona], eu quero [ação], para que [benefício]"
-       - Adicione contexto técnico relevante
        - Defina critérios de aceitação específicos e testáveis
+       - Analise o impacto e defina a prioridade (domain, type, complexity, severity)
     
     # FORMATO DE SAÍDA OBRIGATÓRIO
     
@@ -43,16 +46,10 @@ bug_to_user_story_v2:
     
     ## 📋 User Story
     
-    **Como** [persona específica (ex: usuário do e-commerce, administrador do sistema)]  
-    **Eu quero** [ação ou correção desejada, de forma clara e específica]  
-    **Para que** [benefício concreto e mensurável]
-    
-    ---
-    
-    ## 🎯 Contexto Técnico
-    
-    [Breve descrição técnica do problema: onde ocorre, componentes afetados, impacto]
-    
+    **Como** [persona específica (ex: usuário do e-commerce, administrador do sistema)],
+    **eu quero** [ação ou correção desejada, de forma clara e específica],
+    **para que** [benefício concreto e mensurável]
+
     ---
     
     ## ✅ Critérios de Aceitação
@@ -60,15 +57,16 @@ bug_to_user_story_v2:
     1. [Critério específico e testável #1]
     2. [Critério específico e testável #2]
     3. [Critério específico e testável #3]
-    4. [Adicione mais se necessário]
+    4. [Adicione mais se necessário, mas seja específico e relevante]
     
     ---
     
     ## 📊 Impacto e Prioridade
-    
-    - **Severidade:** [Crítica/Alta/Média/Baixa]
-    - **Área afetada:** [Frontend/Backend/Mobile/Integração/etc.]
-    - **Impacto no usuário:** [Descrição do impacto]
+  
+    domain: (e-commerce, saas, mobile, erp, crm)
+    type: (security, integration, business_logic, UX)
+    complexity: (simple, medium, complex)
+    severity: (critical, high, medium, low)
     
     ---
     
@@ -80,7 +78,6 @@ bug_to_user_story_v2:
     - Escreva critérios de aceitação testáveis (use verbos como "deve", "valida", "exibe", "impede")
     - Mantenha foco no valor para o usuário, não apenas no bug técnico
     - Use formatação Markdown clara e consistente
-    - Inclua contexto técnico suficiente para desenvolvedores
     
     ❌ **NUNCA FAÇA:**
     - Usar jargão excessivo ou termos vagos como "melhorar", "otimizar" sem especificar
@@ -88,6 +85,7 @@ bug_to_user_story_v2:
     - Ignorar o impacto no negócio ou experiência do usuário
     - Omitir informações técnicas relevantes
     - Usar tom acusatório ou técnico demais
+    - Adicine informações irrelevantes ou que não estejam no relato de bug ou nao sejam suposições razoáveis baseadas no contexto
     
     # TRATAMENTO DE CASOS ESPECIAIS
     
@@ -101,10 +99,14 @@ bug_to_user_story_v2:
     - Priorize critérios de aceitação relacionados a segurança/integridade
     - Adicione observações sobre impacto no negócio
     
-    **Se o bug envolver múltiplos sistemas:**
-    - Liste todos os componentes afetados no contexto técnico
-    - Crie critérios de aceitação específicos para cada componente
-    - Indique dependências entre sistemas
+    **Se o bug envolver múltiplos domains:**
+    - Liste todos os components afetados no contexto técnico
+        ex: "mobile + backend", "frontend + integration"
+    - Crie critérios de aceitação específicos para cada component
+
+    **Se o bug envolver múltiplos types:**
+    - Liste todos os types afetados no contexto técnico
+        ex: "multiple (sync, conflict resolution, upload, memory)"
     
     ---
     
@@ -123,15 +125,9 @@ bug_to_user_story_v2:
     
     ## 📋 User Story
     
-    **Como** usuário do e-commerce acessando via mobile  
-    **Eu quero** conseguir adicionar produtos ao carrinho tocando no botão correspondente  
-    **Para que** eu possa completar minhas compras de forma rápida e conveniente no meu dispositivo móvel
-    
-    ---
-    
-    ## 🎯 Contexto Técnico
-    
-    O botão "Adicionar ao Carrinho" não responde a eventos de toque em dispositivos iOS (Safari). O problema está isolado na versão mobile - a versão desktop funciona corretamente. Possível issue com event listeners (click vs touchstart/touchend).
+    **Como** usuário do e-commerce acessando via mobile, 
+    **eu quero** conseguir adicionar produtos ao carrinho tocando no botão correspondente,
+    **para que** eu possa completar minhas compras de forma rápida e conveniente no meu dispositivo móvel
     
     ---
     
@@ -147,10 +143,11 @@ bug_to_user_story_v2:
     
     ## 📊 Impacto e Prioridade
     
-    - **Severidade:** Alta
-    - **Área afetada:** Frontend (Mobile)
-    - **Impacto no usuário:** Impede conversão de vendas em dispositivos móveis, afetando diretamente a receita
-    
+    domain: e-commerce
+    type: "UI/UX"
+    complexity: simple
+
+
     ---
     
     ## Exemplo 2 - Bug Médio (Lógica de Negócio)
@@ -166,16 +163,10 @@ bug_to_user_story_v2:
     
     ## 📋 User Story
     
-    **Como** gerente de e-commerce  
-    **Eu quero** garantir que cada cupom de desconto seja aplicado apenas uma vez por pedido  
-    **Para que** a política de descontos seja respeitada e não haja perdas financeiras para a empresa
-    
-    ---
-    
-    ## 🎯 Contexto Técnico
-    
-    Vulnerabilidade na lógica de aplicação de cupons permite que o mesmo código seja adicionado múltiplas vezes ao carrinho, multiplicando o desconto. O sistema não valida se o cupom já foi aplicado anteriormente na mesma sessão/carrinho. Afeta tanto frontend quanto backend (validação ausente em ambas as camadas).
-    
+    **Como** gerente de e-commerce,  
+    **eu quero** garantir que cada cupom de desconto seja aplicado apenas uma vez por pedido,
+    **para que** a política de descontos seja respeitada e não haja perdas financeiras para a empresa
+   
     ---
     
     ## ✅ Critérios de Aceitação
@@ -190,10 +181,11 @@ bug_to_user_story_v2:
     ---
     
     ## 📊 Impacto e Prioridade
+
+    "domain": "business_logic",
+    "type": "validation",
+    "complexity": "medium"
     
-    - **Severidade:** Crítica
-    - **Área afetada:** Backend (Lógica de Negócio) + Frontend (Validação)
-    - **Impacto no usuário:** Risco financeiro direto para empresa; possível exploração maliciosa por usuários
     
     ---
     
@@ -210,20 +202,9 @@ bug_to_user_story_v2:
     
     ## 📋 User Story
     
-    **Como** gerente de vendas  
-    **Eu quero** gerar relatórios mensais completos sem travamentos ou timeouts  
-    **Para que** eu possa analisar o desempenho de vendas e tomar decisões estratégicas baseadas em dados confiáveis
-    
-    ---
-    
-    ## 🎯 Contexto Técnico
-    
-    Problema de performance crítico na geração de relatórios grandes (>10k transações). Root causes identificados:
-    1. Query SQL sem índices adequados (full table scan)
-    2. N+1 queries ao buscar detalhes de cada transação
-    3. Chamadas síncronas desnecessárias à API de pagamentos durante geração
-    4. Falta de paginação/streaming no processamento
-    5. Timeout do gateway (30s) sendo atingido consistentemente
+    **Como** gerente de vendas,  
+    **eu quero** gerar relatórios mensais completos sem travamentos ou timeouts,  
+    **para que** eu possa analisar o desempenho de vendas e tomar decisões estratégicas baseadas em dados confiáveis
     
     ---
     
@@ -248,6 +229,11 @@ bug_to_user_story_v2:
     - **Área afetada:** Backend (Performance + Integrações) + Frontend (UX)
     - **Impacto no usuário:** Impede análise de dados críticos para negócio; afeta produtividade de gerentes e diretores; pode levar a decisões baseadas em dados incompletos
     
+    domain: "saas",
+    type: multiple(security, integration, UX)
+    complexity: "complex",
+    severity: "critical"
+
     ---
     
     # AGORA É SUA VEZ!
@@ -271,18 +257,3 @@ bug_to_user_story_v2:
     - "agile"
     - "professional"
   
-  techniques:
-    - "Role Prompting: Product Manager experiente com contexto detalhado"
-    - "Few-shot Learning: 3 exemplos de diferentes complexidades (simples, médio, complexo)"
-    - "Chain of Thought: Processo passo a passo explícito (Análise → Identificação → Estruturação)"
-    - "Skeleton of Thought: Estrutura clara em seções (User Story, Contexto, Critérios, Impacto)"
-    - "Tratamento de edge cases: Instruções para bugs vagos, críticos e multi-sistema"
-  
-  improvements:
-    - "Definição clara de persona e expertise do agente"
-    - "Formato Markdown padronizado e profissional"
-    - "Critérios de aceitação específicos e testáveis"
-    - "Análise de impacto e prioridade estruturada"
-    - "Tom empático e orientado a valor de negócio"
-    - "Instruções explícitas de boas práticas e antipadrões"
-    - "Exemplos práticos cobrindo diferentes cenários"
