@@ -4,7 +4,8 @@ langchain-core==0.3.28
 langchain-community==0.3.13
 
 # LangSmith for prompt management and evaluation
-langsmith==0.2.7
+# Note: Requires langsmith>=0.1.125 for evaluate() function and schemas (Example, Run)
+langsmith==0.4.12
 
 # LLM Providers
 langchain-openai==0.2.14

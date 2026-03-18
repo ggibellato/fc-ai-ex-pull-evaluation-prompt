@@ -28,11 +28,11 @@ def list_all_prompts(client: Client):
     try:
         username = os.getenv('USERNAME_LANGSMITH_HUB', '')
         
-        # client.list_prompts() retorna um iterador que gera tuplas ('repos', [lista]) e ('total', int)
-        prompts_data = dict(client.list_prompts())
+        # client.list_prompts() retorna um objeto ListPromptsResponse com atributos .repos e .total
+        prompts_response = client.list_prompts()
         
-        prompts_list = prompts_data.get('repos', [])
-        total = prompts_data.get('total', 0)
+        prompts_list = prompts_response.repos
+        total = prompts_response.total
         
         # Filtrar apenas prompts do usuário
         if username:
@@ -93,8 +93,8 @@ def delete_prompt(client: Client, handle: str):
     
     try:
         # Primeiro verificar se o prompt existe
-        prompts_data = dict(client.list_prompts())
-        prompts_list = prompts_data.get('repos', [])
+        prompts_response = client.list_prompts()
+        prompts_list = prompts_response.repos
         
         username = os.getenv('USERNAME_LANGSMITH_HUB', '')
         found = None
@@ -179,11 +179,11 @@ def list_all_public_prompts(client: Client, limit: int = 100):
     print("=" * 70 + "\n")
     
     try:
-        # client.list_prompts() retorna um iterador que gera tuplas ('repos', [lista]) e ('total', int)
-        prompts_data = dict(client.list_prompts())
+        # client.list_prompts() retorna um objeto ListPromptsResponse com atributos .repos e .total
+        prompts_response = client.list_prompts()
         
-        prompts_list = prompts_data.get('repos', [])[:limit]
-        total = prompts_data.get('total', 0)
+        prompts_list = prompts_response.repos[:limit]
+        total = prompts_response.total
         
         print(f"   Total de prompts públicos no hub: {total}")
         print(f"   Mostrando os primeiros {len(prompts_list)} prompts:\n")
@@ -221,9 +221,9 @@ def find_prompt_by_handle(client: Client, handle: str):
     print("=" * 70 + "\n")
     
     try:
-        # Converter list_prompts iterator para dict
-        prompts_data = dict(client.list_prompts())
-        prompts_list = prompts_data.get('repos', [])
+        # Obter lista de prompts do LangSmith
+        prompts_response = client.list_prompts()
+        prompts_list = prompts_response.repos
         
         found = None
         found_handle = None
@@ -345,8 +345,8 @@ def diagnose_prompt_issue(prompt_name: str):
             
             # Testar via list_prompts
             try:
-                prompts_data = dict(client.list_prompts())
-                prompts_list = prompts_data.get('repos', [])
+                prompts_response = client.list_prompts()
+                prompts_list = prompts_response.repos
                 
                 matches = []
                 
