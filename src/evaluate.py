@@ -40,7 +40,6 @@ if langsmith_endpoint:
     os.environ["LANGCHAIN_ENDPOINT"] = langsmith_endpoint
 
 # Configurar projeto e tracing ANTES dos imports
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_PROJECT"] = project_name
 
 # Agora importar módulos LangChain/LangSmith
