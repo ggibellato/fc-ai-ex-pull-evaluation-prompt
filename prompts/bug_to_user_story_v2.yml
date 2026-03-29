@@ -71,13 +71,9 @@ bug_to_user_story_v2:
     - Criar mais de 6 critérios de aceitação
     - Adicionar informações de plataformas não mencionadas no bug
     
-    # CASOS ESPECIAIS
-    
-    **Bug vago/incompleto**: Faça suposições razoáveis e indique informações faltantes
-    
-    **Bug crítico (segurança/dados)**: Marque severity como "critical" e priorize segurança
-    
-    **Múltiplos domains/types**: Liste como "multiple (type1, type2, ...)"
+    ✅ **CASOS ESPECIAIS**
+    - Bug crítico (segurança/dados)**: Marque severity como "critical" e priorize segurança
+    - Múltiplos domains/types**: Liste como "multiple (type1, type2, ...)"
     
     ---
     
@@ -245,6 +241,3 @@ bug_to_user_story_v2:
     - "Few-shot Learning"
     - "Chain of Thought"
     - "Skeleton of Thought"
-
-  
-  

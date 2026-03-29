@@ -23,13 +23,32 @@ import json
 from typing import List, Dict, Any
 from pathlib import Path
 from dotenv import load_dotenv
-from langsmith import Client
+
+load_dotenv()
+
+# Configurar ambiente LangSmith ANTES de importar qualquer módulo LangChain
+# Isso garante que TODOS os traces (incluindo evaluators) vão para o mesmo projeto
+project_name = os.getenv("LANGSMITH_PROJECT", "fc-ai-ex-pull-evaluation-prompt")
+
+# Mapear variáveis LANGSMITH_* para LANGCHAIN_*
+langsmith_api_key = os.getenv("LANGSMITH_API_KEY")
+if langsmith_api_key:
+    os.environ["LANGCHAIN_API_KEY"] = langsmith_api_key
+
+langsmith_endpoint = os.getenv("LANGSMITH_ENDPOINT")
+if langsmith_endpoint:
+    os.environ["LANGCHAIN_ENDPOINT"] = langsmith_endpoint
+
+# Configurar projeto e tracing ANTES dos imports
+os.environ["LANGCHAIN_PROJECT"] = project_name
+
+# Agora importar módulos LangChain/LangSmith
+from langsmith import Client, evaluate
+from langsmith.schemas import Run, Example
 from langchain import hub
 from langchain_core.prompts import ChatPromptTemplate
 from utils import check_env_vars, format_score, print_section_header, get_llm as get_configured_llm
 from metrics import evaluate_f1_score, evaluate_clarity, evaluate_precision
-
-load_dotenv()
 
 
 def get_llm():
@@ -140,42 +159,49 @@ def pull_prompt_from_langsmith(prompt_name: str) -> ChatPromptTemplate:
         raise
 
 
-def evaluate_prompt_on_example(
-    prompt_template: ChatPromptTemplate,
-    example: Any,
-    llm: Any
-) -> Dict[str, Any]:
-    try:
-        inputs = example.inputs if hasattr(example, 'inputs') else {}
-        outputs = example.outputs if hasattr(example, 'outputs') else {}
-
+def create_target_function(prompt_template: ChatPromptTemplate, llm: Any):
+    """
+    Cria a função target que será avaliada pelo LangSmith evaluate().
+    Esta função recebe inputs e retorna o output do modelo.
+    """
+    def predict(inputs: Dict[str, Any]) -> Dict[str, Any]:
         chain = prompt_template | llm
-
         response = chain.invoke(inputs)
-        answer = response.content
+        return {"output": response.content}
+    
+    return predict
 
-        reference = outputs.get("reference", "") if isinstance(outputs, dict) else ""
 
-        if isinstance(inputs, dict):
+def create_evaluator(eval_name: str, eval_function):
+    """
+    Cria um evaluator customizado para langsmith.evaluate().
+    Retorna um dict com key e score que o evaluate() espera.
+    """
+    def evaluator(run: Run, example: Example) -> Dict[str, Any]:
+        try:
+            # Extrair dados do run e example
+            prediction = run.outputs.get("output", "") if run.outputs else ""
+            reference = example.outputs.get("reference", "") if example.outputs else ""
+            
+            # Extrair question dos inputs
+            inputs = example.inputs if example.inputs else {}
             question = inputs.get("question", inputs.get("bug_report", inputs.get("pr_title", "N/A")))
-        else:
-            question = "N/A"
-
-        return {
-            "answer": answer,
-            "reference": reference,
-            "question": question
-        }
-
-    except Exception as e:
-        print(f"      ⚠️  Erro ao avaliar exemplo: {e}")
-        import traceback
-        print(f"      Traceback: {traceback.format_exc()}")
-        return {
-            "answer": "",
-            "reference": "",
-            "question": ""
-        }
+            
+            # Executar a função de avaliação customizada
+            result = eval_function(question, prediction, reference)
+            
+            return {
+                "key": eval_name,
+                "score": result["score"]
+            }
+        except Exception as e:
+            print(f"      ⚠️  Erro em {eval_name}: {e}")
+            return {
+                "key": eval_name,
+                "score": 0.0
+            }
+    
+    return evaluator
 
 
 def evaluate_prompt(
@@ -187,32 +213,99 @@ def evaluate_prompt(
 
     try:
         prompt_template = pull_prompt_from_langsmith(prompt_name)
-
-        examples = list(client.list_examples(dataset_name=dataset_name))
-        print(f"   Dataset: {len(examples)} exemplos")
-
         llm = get_llm()
 
+        # Get dataset info for counting
+        examples = list(client.list_examples(dataset_name=dataset_name))
+        total_examples = len(examples)
+        
+        if total_examples == 0:
+            print(f"   ⚠️  Nenhum exemplo encontrado no dataset '{dataset_name}'")
+            return {
+                "helpfulness": 0.0,
+                "correctness": 0.0,
+                "f1_score": 0.0,
+                "clarity": 0.0,
+                "precision": 0.0
+            }
+
+        # Create target function for evaluate()
+        target_function = create_target_function(prompt_template, llm)
+
+        # Create evaluators
+        evaluators = [
+            create_evaluator("f1_score", evaluate_f1_score),
+            create_evaluator("clarity", evaluate_clarity),
+            create_evaluator("precision", evaluate_precision),
+        ]
+
+        print(f"   Executando avaliação de {total_examples} exemplos com langsmith.evaluate()...")
+        print("   ")
+
+        # Run evaluate() - creates experiment automatically
+        import io
+        import contextlib
+        import time
+        
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            results = evaluate(
+                target_function,
+                data=dataset_name,
+                evaluators=evaluators,
+                experiment_prefix=prompt_name,
+                max_concurrency=1,
+                client=client,
+            )
+
+        # Get experiment name
+        experiment_name = getattr(results, 'experiment_name', '')
+        
+        # Wait a moment for feedback to be processed
+        time.sleep(3)
+        
+        # Fetch experiment runs with feedback
+        experiment_runs = list(client.list_runs(
+            project_name=experiment_name,
+            is_root=True,
+            limit=total_examples * 2
+        ))
+        
+        # Filter to target runs and reverse for chronological order
+        target_runs = [r for r in experiment_runs if r.name == "Target"][:total_examples]
+        target_runs = list(reversed(target_runs))
+        
+        # Collect scores for averaging
         f1_scores = []
         clarity_scores = []
         precision_scores = []
+        
+        # Display per-example metrics
+        for i, run in enumerate(target_runs, 1):
+            # Get feedback for this run
+            feedbacks = list(client.list_feedback(run_ids=[run.id]))
+            
+            f1_score = 0.0
+            clarity_score = 0.0
+            precision_score = 0.0
+            
+            for feedback in feedbacks:
+                if feedback.key == "f1_score":
+                    f1_score = feedback.score or 0.0
+                elif feedback.key == "clarity":
+                    clarity_score = feedback.score or 0.0
+                elif feedback.key == "precision":
+                    precision_score = feedback.score or 0.0
+            
+            # Store for averaging
+            f1_scores.append(f1_score)
+            clarity_scores.append(clarity_score)
+            precision_scores.append(precision_score)
+            
+            print(f"      [{i}/{total_examples}] F1:{f1_score:.2f} Clarity:{clarity_score:.2f} Precision:{precision_score:.2f}")
 
-        print("   Avaliando exemplos...")
+        print(f"\n   ✓ Avaliação concluída")
 
-        for i, example in enumerate(examples[:10], 1):
-            result = evaluate_prompt_on_example(prompt_template, example, llm)
-
-            if result["answer"]:
-                f1 = evaluate_f1_score(result["question"], result["answer"], result["reference"])
-                clarity = evaluate_clarity(result["question"], result["answer"], result["reference"])
-                precision = evaluate_precision(result["question"], result["answer"], result["reference"])
-
-                f1_scores.append(f1["score"])
-                clarity_scores.append(clarity["score"])
-                precision_scores.append(precision["score"])
-
-                print(f"      [{i}/{min(10, len(examples))}] F1:{f1['score']:.2f} Clarity:{clarity['score']:.2f} Precision:{precision['score']:.2f}")
-
+        # Calculate averages from collected scores
         avg_f1 = sum(f1_scores) / len(f1_scores) if f1_scores else 0.0
         avg_clarity = sum(clarity_scores) / len(clarity_scores) if clarity_scores else 0.0
         avg_precision = sum(precision_scores) / len(precision_scores) if precision_scores else 0.0
@@ -225,11 +318,14 @@ def evaluate_prompt(
             "correctness": round(avg_correctness, 4),
             "f1_score": round(avg_f1, 4),
             "clarity": round(avg_clarity, 4),
-            "precision": round(avg_precision, 4)
+            "precision": round(avg_precision, 4),
+            "experiment_name": experiment_name
         }
 
     except Exception as e:
         print(f"   ❌ Erro na avaliação: {e}")
+        import traceback
+        traceback.print_exc()
         return {
             "helpfulness": 0.0,
             "correctness": 0.0,
@@ -244,6 +340,8 @@ def display_results(prompt_name: str, scores: Dict[str, float]) -> bool:
     print(f"Prompt: {prompt_name}")
     print("=" * 50)
 
+    experiment_name = scores.get("experiment_name", "")
+    
     print("\nMétricas LangSmith:")
     print(f"  - Helpfulness: {format_score(scores['helpfulness'], threshold=0.9)}")
     print(f"  - Correctness: {format_score(scores['correctness'], threshold=0.9)}")
@@ -253,7 +351,7 @@ def display_results(prompt_name: str, scores: Dict[str, float]) -> bool:
     print(f"  - Clarity: {format_score(scores['clarity'], threshold=0.9)}")
     print(f"  - Precision: {format_score(scores['precision'], threshold=0.9)}")
 
-    average_score = sum(scores.values()) / len(scores)
+    average_score = sum(v for v in scores.values() if v is not None and isinstance(v, (int, float))) / 5
 
     print("\n" + "-" * 50)
     print(f"📊 MÉDIA GERAL: {average_score:.4f}")
@@ -292,18 +390,32 @@ def main():
     if not check_env_vars(required_vars):
         return 1
 
+    # Client já configurado com as variáveis de ambiente no início do arquivo
     client = Client()
-    project_name = os.getenv("LANGSMITH_PROJECT", "prompt-optimization-challenge-resolved")
+    
+    print(f"📊 LangSmith Project: {project_name}")
+    print(f"🧪 Using langsmith.evaluate() to create EXPERIMENTS")
+    print(f"🔗 View at: https://smith.langchain.com/")
+    print(f"   Navigate to: Projects → {project_name} → Experiments tab")
+    print(f"   All traces (including evaluators) will go to: {project_name}\n")
 
-    jsonl_path = "datasets/bug_to_user_story.jsonl"
-
-    if not Path(jsonl_path).exists():
-        print(f"❌ Arquivo de dataset não encontrado: {jsonl_path}")
-        print("\nCertifique-se de que o arquivo existe antes de continuar.")
+    # Usar o dataset já carregado no LangSmith
+    dataset_name = "bug_to_user_story_v2_dataset"
+    
+    # Verificar se o dataset existe
+    try:
+        datasets = list(client.list_datasets(dataset_name=dataset_name))
+        if datasets:
+            print(f"✓ Usando dataset existente: {dataset_name}")
+            print(f"  Dataset ID: {datasets[0].id}\n")
+        else:
+            print(f"❌ Dataset '{dataset_name}' não encontrado no LangSmith")
+            print(f"\nPor favor, faça upload do dataset primeiro:")
+            print(f"  python src/tools/dataset_upload.py")
+            return 1
+    except Exception as e:
+        print(f"❌ Erro ao verificar dataset: {e}")
         return 1
-
-    dataset_name = f"{project_name}-eval"
-    create_evaluation_dataset(client, dataset_name, jsonl_path)
 
     print("\n" + "=" * 70)
     print("PROMPTS PARA AVALIAR")
@@ -365,8 +477,8 @@ def main():
 
     if all_passed:
         print("✅ Todos os prompts atingiram média >= 0.9!")
-        print(f"\n✓ Confira os resultados em:")
-        print(f"  https://smith.langchain.com/projects/{project_name}")
+        print(f"\n✓ Confira os traces em:")
+        print(f"  https://smith.langchain.com/ → Tracing")
         print("\nPróximos passos:")
         print("1. Documente o processo no README.md")
         print("2. Capture screenshots das avaliações")
@@ -382,3 +494,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+

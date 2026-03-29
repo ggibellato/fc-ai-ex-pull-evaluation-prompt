@@ -14,7 +14,7 @@
    - ✅ **ADICIONADO:** `langchain-groq==0.2.1` (requisito especial - usar GROQ como LLM principal por custo)
    
 4. **[DONE]** Verificar e criar/complementar `.env.example` com variáveis necessárias:
-   - ✅ `LANGSMITH_API_KEY`, `LANGSMITH_PROJECT`, `LANGSMITH_TRACING` (obrigatório)
+   - ✅ `LANGSMITH_API_KEY`, `LANGCHAIN_PROJECT`, `LANGSMITH_TRACING` (obrigatório)
    - ✅ `GROQ_API_KEY` (principal - requisito especial por custo)
    - ✅ `OPENAI_API_KEY` (opcional - referência)
    - ✅ `LLM_PROVIDER` (para alternar entre providers: "groq", "openai", "google")

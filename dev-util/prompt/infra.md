@@ -81,7 +81,7 @@ llm = ChatGroq(
 - **Função:** Gestão de prompts, tracing e avaliação
 - **Configuração necessária:**
   - `LANGSMITH_API_KEY`: API key da plataforma
-  - `LANGSMITH_PROJECT`: Nome do projeto no LangSmith
+  - `LANGCHAIN_PROJECT`: Nome do projeto no LangSmith
 - **URL:** https://smith.langchain.com/
 - **Prompt Hub:** Repositório de prompts (`hub.pull()` e `hub.push()`)
 
@@ -91,7 +91,7 @@ llm = ChatGroq(
 ```bash
 # LangSmith Configuration (OBRIGATÓRIO)
 LANGSMITH_API_KEY=your_langsmith_api_key_here
-LANGSMITH_PROJECT=bug-to-user-story-optimization
+LANGCHAIN_PROJECT=bug-to-user-story-optimization
 LANGSMITH_TRACING=true
 
 # LLM Provider Selection
