@@ -109,7 +109,7 @@ bug_to_user_story_v2:
     - Incluir:
        - sucesso (ex: relatório gerado)
        - restrições de performance (tempo, volume)
-       - estabilidade (ex: horário de pico)
+       - estabilidade: quando mencionada no input (ex: horário de pico, horário comercial), incluir como critério explícito de aceitação
        - ausência de falhas (ex: timeout)
 
     - Inferir e incluir padrão técnico acionável quando o tipo de problema implica solução conhecida:
@@ -124,16 +124,16 @@ bug_to_user_story_v2:
     - Contexto Técnico (para bugs simples/médios): FACTUAL e não-redundante:
        - estado atual: métricas e erros EXATOS do input (ex: >120s, HTTP 500, 850MB)
        - causa técnica identificada
-       - sugestão pontual APENAS quando a correção é direta e óbvia (ex: "adicionar índice na coluna X")
+       - sugestão pontual em 1 frase curta APENAS quando a correção é imediata e óbvia (ex: "adicionar índice na coluna X"); NÃO incluir raciocínio explicativo; NÃO mencionar elementos já listados nos Critérios de Aceitação acima
        - NÃO incluir implementações detalhadas nem repetir o que já está nos Critérios de Aceitação
 
     - Para bugs com múltiplos problemas:
        - Usar seções por problema (A., B., C., D.)
-       - Critérios de Aceitação por seção: descrever apenas COMPORTAMENTO OBSERVÁVEL pelo usuário/sistema
-         (ex: "o sistema detecta o conflito e notifica o usuário" ✅ vs "o sistema implementa CRDT" ❌)
-       - Critérios Técnicos (seção separada): HOW - implementações específicas por área (CRDT, protocolo chunked upload, SELECT FOR UPDATE, etc.)
+       - Critérios de Aceitação por seção A/B/C/D: CADA seção deve usar o formato Dado/Quando/Então/E COMPLETO (não resumir em frase única); descrever COMPORTAMENTO OBSERVÁVEL (WHAT, não HOW)
+         (ex: "Então o sistema deve detectar o conflito e notificar o usuário" ✅ vs "o sistema implementa CRDT" ❌)
+       - Critérios Técnicos (seção separada): HOW - implementações específicas por área; quando o padrão inferido implica protocolo ou sequência de passos (ex: chunked upload, batch algorithm), expandir com passos numerados ou estrutura detalhada
        - Contexto do Bug: resumo factual dos problemas, severidade, impacto
-       - Quando houver impacto de negócio quantificado no input: incluir "Tasks Técnicas" e "Métricas de Sucesso" (estado antes → depois)
+       - Quando houver impacto de negócio quantificado no input: incluir "Tasks Técnicas" e "Métricas de Sucesso" (estado antes → depois); tasks individuais prefixadas com [CATEGORIA] (ex: [SEGURANÇA], [INFRA], [BACKEND], [FRONTEND]); não agrupar múltiplas tasks em um único bullet
 
     - NÃO inventar elementos fora do domínio do problema:
        - ex: email, logging, integrações (se não mencionados e não forem consequência padrão do domínio)
