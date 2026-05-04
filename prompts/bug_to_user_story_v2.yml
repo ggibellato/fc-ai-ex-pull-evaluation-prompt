@@ -34,8 +34,8 @@ bug_to_user_story_v2:
         - incluindo explicação do erro e do formato correto quando aplicável
       - Consequências no fluxo (ex: impedir ação ou bloquear continuidade)
       - Requisitos de UX padrão implícitos para interfaces, quando aplicável:
-        - acessibilidade (foco de teclado, ESC, interação fora do modal/backdrop)
-        - responsividade (mobile / tablet / desktop quando UI modal ou layout for citado)
+        - acessibilidade para modais (OBRIGATÓRIO incluir os três): (1) foco do teclado vai para o modal, (2) fechar com ESC, (3) fechar ao clicar no backdrop
+        - responsividade: quando modal for citado em contexto mobile, incluir dimensão mínima para uso (ex: ≥90% da largura disponível em telas pequenas)
       - a totalidade dos elementos essenciais explícitos ou implicitamente diretos do input
 
     - NÃO omitir:
@@ -72,71 +72,79 @@ bug_to_user_story_v2:
 
     ## Se TECHNICAL:
     - Preservar na totalidade os dados explícitos do input como base factual
-      (ex: tempos atuais, limites, erros, volumes, causas técnicas, nomes de gateways/serviços)
+       (ex: tempos atuais, limites, erros, volumes, causas técnicas)
 
     - Diferenciar explicitamente:
-      - estado atual (problema existente, com métricas atuais)
-      - objetivo esperado (estado ideal normalizado)
+       - estado atual (problema existente, com métricas atuais)
+       - objetivo esperado (estado ideal normalizado)
 
     - Converter problemas em objetivos claros e mensuráveis:
-      - lentidão → tempo aceitável
-      - timeout → não ocorrência de timeout
-      - erro → operação bem-sucedida
+       - lentidão → tempo aceitável
+       - timeout → não ocorrência de timeout
+       - erro → operação bem-sucedida
 
     - Quando houver métricas ruins no input (ex: >120s, timeout):
-      - Permitir derivar metas razoáveis e padronizadas
-      - Preferir valores comuns de mercado:
-        - operações síncronas: <30 segundos
-        - evitar timeout existente
-      - Não manter métricas ruins como objetivo
+       - Permitir derivar metas razoáveis e padronizadas
+       - Preferir valores comuns de mercado:
+         - operações síncronas: <30 segundos
+         - evitar timeout existente
+       - Não manter métricas ruins como objetivo
 
-    - Incluir integralmente os elementos do input:
-      - volume (ex: >1000 registros)
-      - contexto (ex: horário de pico)
-      - causa técnica (ex: falta de índice)
+    - Incluir na totalidade os elementos do input:
+       - volume (ex: >1000 registros)
+       - contexto (ex: horário de pico)
+       - causa técnica (ex: falta de índice)
+       - consequências funcionais implícitas padrão do domínio:
+          - integração de pagamento/pedido aprovado: SEMPRE incluir email de confirmação ao cliente E log de auditoria do evento
+          - outras integrações críticas: incluir log de auditoria
 
     - Cada problema deve gerar:
-      - 1 critério funcional
-      - OU 1 critério de performance
+       - 1 critério funcional
+       - OU 1 critério de performance
 
     - Incluir critérios de aceitação no formato testável:
-      - Given / When / Then
-      - com condições claras e verificáveis
+       - Given / When / Then
+       - com condições claras e verificáveis
 
-    - Critérios de Aceitação devem conter apenas comportamento observável do sistema:
-      - sucesso funcional (ex: relatório gerado, status atualizado)
-      - restrições de performance (tempo, volume)
-      - estabilidade (ex: horário de pico)
-      - ausência de falhas (ex: timeout)
-      - NÃO incluir detalhes de implementação técnica (ex: "usar índice SQL", "otimizar query") nos critérios
+    - Incluir:
+       - sucesso (ex: relatório gerado)
+       - restrições de performance (tempo, volume)
+       - estabilidade (ex: horário de pico)
+       - ausência de falhas (ex: timeout)
 
-    - Incluir seção Contexto Técnico separada para:
-      - estado atual com métricas (ex: >120s, HTTP 500)
-      - causa identificada (ex: falta de índice na coluna data_venda)
-      - solução técnica sugerida (ex: adicionar índice, otimizar query)
+    - Inferir e incluir padrão técnico acionável quando o tipo de problema implica solução conhecida:
+       - falta de índice → adicionar índice na coluna identificada
+       - query lenta → otimizar query (index, query rewrite)
+       - race condition → operação atômica ou lock (otimista/pessimista); ex: SELECT FOR UPDATE, Redis INCR atômico
+       - timeout / instabilidade externa → circuit breaker ou retry com idempotency key e exponential backoff
+       - conflito de dados em sincronização → CRDT (Conflict-free Replicated Data Types) ou Vector Clocks; estratégia híbrida: auto-merge para campos independentes, resolução manual para conflitos; criar cópia de backup das versões conflitantes antes de sobrescrever
+       - upload de arquivo grande → chunked upload com checkpoints (ex: a cada 5MB), retomada via upload_id, idempotency por chunk; protocolo com endpoints: initiate (POST → retorna upload_id), chunk (PUT por parte), complete (POST), status (GET para retomar)
+       - input sem sanitização → sanitização frontend (ex: DOMPurify) + validação/sanitização de schema no backend (ex: express-validator, OWASP sanitizer) + Content Security Policy headers
 
-    - Inferência de solução técnica quando houver evidência clara:
-      - ex: falta de índice → adicionar índice
-      - ex: query lenta → otimizar query
+    - Contexto Técnico (para bugs simples/médios): FACTUAL e não-redundante:
+       - estado atual: métricas e erros EXATOS do input (ex: >120s, HTTP 500, 850MB)
+       - causa técnica identificada
+       - sugestão pontual APENAS quando a correção é direta e óbvia (ex: "adicionar índice na coluna X")
+       - NÃO incluir implementações detalhadas nem repetir o que já está nos Critérios de Aceitação
 
-    - Incluir efeitos colaterais padrão de fluxos críticos de negócio quando diretamente deriváveis:
-      - confirmação ao cliente após operação crítica (ex: pagamento aprovado → email de confirmação)
-      - auditoria/logging em operações de estado crítico (ex: pagamento, pedido, autenticação)
-      - persistência de estado após evento (ex: status do pedido atualizado)
+    - Para bugs com múltiplos problemas:
+       - Usar seções por problema (A., B., C., D.)
+       - Critérios de Aceitação por seção: descrever apenas COMPORTAMENTO OBSERVÁVEL pelo usuário/sistema
+         (ex: "o sistema detecta o conflito e notifica o usuário" ✅ vs "o sistema implementa CRDT" ❌)
+       - Critérios Técnicos (seção separada): HOW - implementações específicas por área (CRDT, protocolo chunked upload, SELECT FOR UPDATE, etc.)
+       - Contexto do Bug: resumo factual dos problemas, severidade, impacto
+       - Quando houver impacto de negócio quantificado no input: incluir "Tasks Técnicas" e "Métricas de Sucesso" (estado antes → depois)
 
     - NÃO inventar elementos fora do domínio do problema:
-      - não adicionar integrações, validações ou fluxos sem relação causal com o problema descrito
-
-    - Não incluir valores específicos de passos de reprodução (ex: R$ 100, IDs de teste)
-      a menos que definam uma regra de negócio ou limite funcional
+       - ex: email, logging, integrações (se não mencionados e não forem consequência padrão do domínio)
 
     - Evitar generalizações:
-      - sempre conectar problema → causa → solução
+       - sempre conectar problema → causa → solução
 
     - Priorizar:
-      - Clareza > fidelidade literal
-      - Objetividade > restrição artificial
-      - Completude funcional > minimalismo
+       - Clareza > fidelidade literal
+       - Objetividade > restrição artificial
+       - Completude funcional > minimalismo
 
 
     # PROCESSO INTERNO (não exibir)
@@ -169,13 +177,24 @@ bug_to_user_story_v2:
     # FORMATO DE SAÍDA (OBRIGATÓRIO)
     Responda em texto simples (sem markdown, sem emojis, sem explicações extras).
 
-    Como [persona], eu quero [ação], para que [benefício].
+    Como [persona/sistema], eu quero [ação], para que [benefício].
 
     Critérios de Aceitação:
-    - Dado que [contexto]
+    - Dado que [contexto com dados do input]
     - Quando [ação]
-    - Então [resultado esperado]
+    - Então [resultado esperado e mensurável]
     - E [validação adicional]
+
+    Contexto Técnico: (para bugs simples/médios - quando bug report contiver valores técnicos explícitos)
+    - [estado atual: apenas valores e erros EXPLÍCITOS do input - ex: HTTP 500, >120s, z-index 1000]
+    - [causa técnica identificada]
+    - [sugestão pontual e direta quando correção é óbvia - NÃO repetir critérios já listados acima]
+
+    [Para bugs com múltiplos problemas]:
+    - Critérios de Aceitação A/B/C/D: comportamento observável (WHAT)
+    - Critérios Técnicos: implementações específicas por área (HOW)
+    - Contexto do Bug: fatos, severidade, impacto
+    - Tasks Técnicas + Métricas de Sucesso: quando houver impacto quantificado no input
 
     # EXEMPLOS DE REFERÊNCIA (não usar os mesmos do dataset)
 
@@ -189,7 +208,7 @@ bug_to_user_story_v2:
     Bug Report:
     "Webhook de pagamento aprovado não está sendo chamado. Endpoint retorna HTTP 500."
     Output Esperado:
-    "Como o sistema de e-commerce, eu quero receber notificações de pagamento aprovado via webhook, para que o status dos pedidos seja atualizado automaticamente.\n\nCritérios de Aceitação:\n- Dado que um pagamento é aprovado no gateway\n- Quando o gateway envia POST para /api/webhooks/payment\n- Então o endpoint deve retornar HTTP 200\n- E o status do pedido deve mudar de \"pendente\" para \"aprovado\"\n- E logs devem indicar sucesso ou falha detalhada\n\nContexto Técnico:\n- Endpoint está retornando HTTP 500","metadata": "domain": "saas","type": "integration","complexity": "medium"
+    "Como o sistema de e-commerce, eu quero receber notificações de pagamento aprovado via webhook, para que o status dos pedidos seja atualizado automaticamente.\n\nCritérios de Aceitação:\n- Dado que um pagamento é aprovado no gateway\n- Quando o gateway envia POST para /api/webhooks/payment\n- Então o endpoint deve retornar HTTP 200\n- E o status do pedido deve mudar de \"pendente\" para \"aprovado\"\n- E o cliente deve receber email de confirmação\n- E o sistema deve logar o evento para auditoria\n\nContexto Técnico:\n- Estado atual: Endpoint retornando HTTP 500\n- Causa: falha no processamento do webhook\n- Solução: corrigir handler do endpoint e implementar logs de auditoria","metadata": "domain": "saas","type": "integration","complexity": "medium"
 
     ## Exemplo 3 (COMPLEX / MULTIPLE)
     Bug Report:
